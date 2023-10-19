@@ -10,7 +10,7 @@ local server = '{EA3A50}Bounce Project'
 local hasWebcore, webcore = pcall(require, 'webcore')
 
 script_url('vk.com/electronjsc')
-script_name('Browser | Arizona')
+script_name('CEF Browser | DEV')
 script_authors('electronjsc | {37B5F0}Åãîð Çèìîâ ('.. script.this.url ..')')
 script_description('Äàííûé ñêðèïò áûë ñîçäàí äëÿ ïîëíîöåííîãî èñïîëüçîâàíèÿ, ñåðâåðîì '.. server ..'.')
 
