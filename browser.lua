@@ -6,13 +6,13 @@ local encoding = require 'encoding'
 encoding.default = 'CP1251'
 u8 = encoding.UTF8
 
-local server = '{EA3A50}Arizona | Faraway'
+local server = '{EA3A50}Bounce Project'
 local hasWebcore, webcore = pcall(require, 'webcore')
 
 script_url('vk.com/electronjsc')
 script_name('Browser | Arizona')
-script_authors('electronjsc | {37B5F0}Егор Зимов ('.. script.this.url ..')')
-script_description('Данный скрипт был создан для полноценного использования, сервером '.. server ..'.')
+script_authors('electronjsc | {37B5F0}Г…ГЈГ®Г° Г‡ГЁГ¬Г®Гў ('.. script.this.url ..')')
+script_description('Г„Г Г­Г­Г»Г© Г±ГЄГ°ГЁГЇГІ ГЎГ»Г« Г±Г®Г§Г¤Г Г­ Г¤Г«Гї ГЇГ®Г«Г­Г®Г¶ГҐГ­Г­Г®ГЈГ® ГЁГ±ГЇГ®Г«ГјГ§Г®ГўГ Г­ГЁГї, Г±ГҐГ°ГўГҐГ°Г®Г¬ '.. server ..'.')
 
 -------------------------------------------
 
