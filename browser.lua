@@ -1,38 +1,39 @@
 require "lib.moonloader"
 local sampev = require "samp.events"
-local JsonStatus, Json = pcall(require, 'j-cfg');
-assert(JsonStatus, 'jsoncfg.lua not found!');
+local inicfg = require 'inicfg'
+
 local encoding = require 'encoding'
 encoding.default = 'CP1251'
 u8 = encoding.UTF8
 
-local server = '{EA3A50}Arizona | Faraway'
+local browser = nil
 local hasWebcore, webcore = pcall(require, 'webcore')
 
 script_url('vk.com/electronjsc')
-script_name('Browser | Arizona')
+script_name('CEF Browser | DEV')
 script_authors('electronjsc | {37B5F0}Егор Зимов ('.. script.this.url ..')')
-script_description('Данный скрипт был создан для полноценного использования, сервером '.. server ..'.')
 
 -------------------------------------------
 
-local status, cfg = Json('browser.json', {
-    homepage = 'https://google.com/',
-    coords = {
-        x = 40,
-        y = 300
-    },
-    window = {
-        height = 190,
-        weight = 70
-    }
-})
+local cfg = inicfg.load({
+    aBrowserHomePage = 'https://www.google.com/',
+    aBrowserHTTPCode = 0,
+    aBrowserX = 300,
+    aBrowserY = 300,
+    aBrowserWeight = 600,
+    aBrowserHeight = 400,
+    aBrowserOpen = false
 
+}, '[dev]browser.ini')
 
 function main()
     repeat wait(100) until isSampAvailable()
+    while not webcore.inited() do wait(100) end
 
-    print(cfg)
+    browser = webcore:create(cfg.aBrowserHomePage, cfg.aBrowserX, cfg.aBrowserY, cfg.aBrowserWeight, cfg.aBrowserHeight)
+    cfg.aBrowserOpen = true;
+
+-------------------------
 
     if not hasWebcore then
         SendClientMessage('webcore.asi not loaded. Check please console for details', 0xFFFFFF)
@@ -43,46 +44,90 @@ function main()
         print(webcore)
     end
 
+--------------------------
+
     sampRegisterChatCommand('window', function()
-        SendClientMessage(string.format(u8'Pisition X: '.. cfg.coords.x' Position Y: '.. cfg.coords.y ..' '))
-        SendClientMessage(string.format(u8'Size W: '.. cfg.window.weight ..' Size H: 'cfg.window.height' '))
-        SendClientMessage(string.format(u8'Home Page: '.. cfg.homepage ..''))
+        SendClientMessage(string.format(u8'Browser Pisition X: '.. cfg.aBrowserX ..'Browser Position Y: '.. cfg.aBrowserY ..' '))
+        SendClientMessage(string.format(u8'Browser Size Weight: '.. cfg.aBrowserWeight ..'Browser Size Height: '.. cfg.aBrowserHeight ..' '))
+        SendClientMessage(string.format(u8'Browser Home Page: '.. cfg.aBrowserHomePage ..''))
     end)
 
-    sampRegisterChatCommand('browser', function()
-
-        local browser = webcore:create(
-            cfg.homepage, 
-            cfg.coords.x, 
-            cfg.coords.y, 
-            cfg.window.weight, 
-            cfg.window.height
-        )
-
-        browser:set_create_cb(
-        function (_)
-            SendClientMessage('| Browser Initialization |', 0xFFFFFF)
-        end)
-
+    sampRegisterChatCommand('browser', function() 
+        if cfg.aBrowserOpen == true then
+            browser:set_active(true)
+            cfg.aBrowserOpen = false
+        end
     end)
     
+--------------------------
+
     local state_acsess = webcore.inited() and 'Enabled' or 'Disabled'
 
-    SendClientMessage(string.format(u8'Loaded Script. Script Authors: ' .. table.concat(script.this.authors, ', ')))
-    SendClientMessage(string.format(u8'Description Script: ' .. script.this.description))
+    SendClientMessage(string.format(u8'Loaded Script. | /browser | Script Authors: ' .. table.concat(script.this.authors, ', ')))
     SendClientMessage(string.format(u8'Version Script and WebCore: '.. webcore.version() ..' | WebCore Initialization: '.. state_acsess ..' '))
     
-    for i = 1, 3 do
-        SendClientMessage(' ', 0xFFFFFF)
+    for i = 1, 2 do
+        sampAddChatMessage(' ', 0xFFFFFF)
     end
 
-    SendClientMessage(string.format(u8'Information From Server'))
-    SendClientMessage(string.format(u8'IP Adress Server: {37B5F0}'.. sampGetCurrentServerAddress() ..':7777 '))
-    SendClientMessage(string.format(u8'Name Server: {EA3A50}'.. sampGetCurrentServerName() ..' '))
+-------------------------
 
-    -- callFunction(onBrowserInitialization, 5, 5, cfg.homepage, cfg.coords.x, cfg.coords.y, cfg.window.weight, cfg.window.height)
+    browser:set_create_cb(
+        function (_)
+            SendClientMessage('| Browser Initialization |', 0xFFFFFF)
+            SendClientMessage('| Browser URL: '.. cfg.aBrowserHomePage ..' ')
+            SendClientMessage('| Demonstrate cursor - F; Close/Open the browser - X')
+            SendClientMessage('| Scroll the page back - Аrrow Left; Scroll the page forward - Аrrow Right')
+        end
+    )
+
+    browser:set_loading_cb(
+        function (_, httpStatusCode)
+            cfg.aBrowserHTTPCode = httpStatusCode
+            inicfg.save(cfg)
+            -- SendClientMessage('| Loading Done. HTTP StatusCode = '.. cfg.aBrowserHTTPCode ..' |', -1)
+        end
+    )
+
+     browser:set_close_cb(
+        function (_)
+            SendClientMessage('| Closed Browser. HTTP StatusCode = '.. cfg.aBrowserHTTPCode ..' ', -1)
+            cfg.aBrowserOpen = false
+            browser = nil
+        end
+    )
+
+------------------------
+
+    while true do
+        wait(10)
+
+        if isKeyJustPressed(0x58) then 
+            if cfg.aBrowserOpen == true then
+                browser:set_active(false)
+                cfg.aBrowserOpen = false
+            else 
+                browser:set_active(true)
+                cfg.aBrowserOpen = true
+            end
+        end
+
+        if isKeyJustPressed(0x46) then
+            browser:set_input(true)
+        end
+
+        if isKeyJustPressed(0x25) then
+            browser:go_back()
+        end
+
+        if isKeyJustPressed(0x27) then
+            browser:go_forward()
+        end
+    end
+
+    inicfg.save(cfg)
 end
 
 function SendClientMessage(text)
-    sampAddChatMessage(string.format('['.. script.this.name ..'] '.. text ..' '), 0xFFFFFF)
+    sampAddChatMessage(string.format('{7D71FB}['.. script.this.name ..'] {FFFFFF}'.. text ..' '), -1)
 end
