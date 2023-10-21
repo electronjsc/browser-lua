@@ -19,6 +19,7 @@ script_authors('electronjsc | {37B5F0}≈„Ó «ËÏÓ‚ ('.. script.this.url ..')')
 
 local cfg = ini.load({
     aBrowserHomePage = 'https://www.google.com/',
+    aBrowserLastURL = 'https://www.google.com/',
     aBrowserHTTPCode = 0,
 
     aBrowserX = 300,
@@ -29,7 +30,6 @@ local cfg = ini.load({
     aBrowserOpen = false,
     aBrowserFullScreen = false,
 
-    aBrowserLastURL = 'https://www.google.com/',
     aBrowserServiceYouTube = 'https://www.youtube.com/',
     aBrowserServiceVK = 'https://vk.com/',
     aBrowserServiceForum = 'https://forum.arizona-rp.com/',
@@ -95,7 +95,6 @@ function main()
     browser:set_create_cb(
         function (_)
             SendClientMessage('| Browser Initialization | /browser - settings', 0xFFFFFF)
-            SendClientMessage('| Browser URL: '.. cfg.aBrowserHomePage ..' ')
             SendClientMessage('| Demonstrate cursor - F; Close/Open the browser - X')
             SendClientMessage('| Scroll the page back - ¿rrow Left; Scroll the page forward - ¿rrow Right')
         end
@@ -106,7 +105,8 @@ function main()
             cfg.aBrowserHTTPCode = httpStatusCode
             ini.save(cfg, 'browser.ini')
 
-            -- SendClientMessage('| Loading Done. HTTP StatusCode = '.. cfg.aBrowserHTTPCode ..' |', -1)
+            cfg.aBrowserLastURL = browser:get_url()
+            SendClientMessage('| Loading Done. | Browser URL: ' .. cfg.aBrowserLastURL, -1)
         end
     )
 
@@ -211,15 +211,11 @@ local newFrame = imgui.OnFrame(
 
         if isKeyJustPressed(0x58) then 
             if cfg.aBrowserOpen == true then
-
                 browser:set_active(false)
                 cfg.aBrowserOpen = false
-
             elseif not sampIsChatInputActive() then
-
                 browser:set_active(true)
                 cfg.aBrowserOpen = true
-
             end
         end
 
@@ -230,11 +226,15 @@ local newFrame = imgui.OnFrame(
         end
 
         if isKeyJustPressed(0x25) then
-            browser:go_back()
+            if not browser:input_active() and not sampIsChatInputActive() then
+                browser:go_back()
+            end
         end
 
         if isKeyJustPressed(0x27) then
-            browser:go_forward()
+            if not browser:input_active() and not sampIsChatInputActive() then
+                browser:go_forward()
+            end
         end
     end
 
@@ -246,6 +246,7 @@ function SendClientMessage(text)
 end
 
 function reloadScripts()
+    browser:load_url(cfg.aBrowserHomePage)
     browser:close(browser)
 end
 
