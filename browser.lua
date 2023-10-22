@@ -9,6 +9,7 @@ u8 = encoding.UTF8
 
 local browser = nil
 local hasWebcore, webcore = pcall(require, 'webcore')
+local directInI = 'moonloader//cfg//browser.ini'
 
 
 script_url('vk.com/electronjsc')
@@ -35,7 +36,7 @@ local cfg = ini.load({
     aBrowserServiceForum = 'https://forum.arizona-rp.com/',
     aBrowserServiceGitHub = 'https://github.com/electronjsc'
 
-}, "browser.ini")
+})
 
 local new = imgui.new
 local newFrame = new.bool(false)
@@ -95,7 +96,7 @@ function main()
     browser:set_create_cb(
         function (_)
             SendClientMessage('| Browser Initialization | /browser - settings', 0xFFFFFF)
-            SendClientMessage('| Demonstrate cursor - F; Close/Open the browser - X')
+            SendClientMessage('| Close/Open the browser/Demonstrate cursor - X ([{)')
             SendClientMessage('| Scroll the page back - Аrrow Left; Scroll the page forward - Аrrow Right')
         end
     )
@@ -165,7 +166,8 @@ local newFrame = imgui.OnFrame(
                 browser:set_rect(cfg.aBrowserX, cfg.aBrowserY, cfg.aBrowserWeight, cfg.aBrowserHeight)
             end
             if imgui.Checkbox(u8'Включить полноэкранный режим', BrowserFullScreen) then
-                if not cfg.aBrowserFullScreen then 
+                if not cfg.aBrowserFullScreen then
+                     
                     cfg.aBrowserHeight = 1077
                     cfg.aBrowserWeight = 1920
 
@@ -174,7 +176,9 @@ local newFrame = imgui.OnFrame(
 
                     browser:set_rect(cfg.aBrowserX, cfg.aBrowserY, cfg.aBrowserWeight, cfg.aBrowserHeight)
                     cfg.aBrowserFullScreen = true
-                else 
+
+                else
+
                     cfg.aBrowserWeight = 600
                     cfg.aBrowserHeight = 400
 
@@ -183,6 +187,7 @@ local newFrame = imgui.OnFrame(
 
                     browser:set_rect(cfg.aBrowserX, cfg.aBrowserY, cfg.aBrowserWeight, cfg.aBrowserHeight) 
                     cfg.aBrowserFullScreen = false
+
                 end
             end
             imgui.Separator()
@@ -209,19 +214,19 @@ local newFrame = imgui.OnFrame(
     while true do
         wait(10)
 
-        if isKeyJustPressed(0x58) then 
-            if cfg.aBrowserOpen == true then
-                browser:set_active(false)
-                cfg.aBrowserOpen = false
-            elseif not sampIsChatInputActive() then
-                browser:set_active(true)
-                cfg.aBrowserOpen = true
-            end
-        end
+        if isKeyJustPressed(0xDB) then 
+            if cfg.aBrowserOpen then
 
-        if isKeyJustPressed(0x46) then
-            if not sampIsChatInputActive() then
+                browser:set_active(false)
+                browser:set_input(false)
+                cfg.aBrowserOpen = false
+
+            elseif not sampIsChatInputActive() then
+
+                browser:set_active(true)
                 browser:set_input(true)
+                cfg.aBrowserOpen = true
+
             end
         end
 
@@ -238,7 +243,7 @@ local newFrame = imgui.OnFrame(
         end
     end
 
-    ini.save(cfg, 'browser.ini')
+    ini.save(cfg)
 end
 
 function SendClientMessage(text)
